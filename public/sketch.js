@@ -1,89 +1,88 @@
 let socket;
-let colors = [];
-let gridSize = 40;
-let hasInteracted = false;
+let myColor;
+const step = 30; 
 
 function setup() {
-  createCanvas(windowWidth, windowHeight);
+    createCanvas(windowWidth, windowHeight);
+    background(245); 
+    socket = io();
+
+    colorMode(HSB, 360, 100, 100, 1);
+    myColor = color(random(360), 80, 90); 
+
+    socket.on('assign_id', (num) => {
+        console.log("Assigned ID: " + num);
+    });
+
+    socket.on('drawing', (data) => {
+        let incomingCol = color(data.col.h, data.col.s, data.col.b);
+        drawPattern(data.x, data.y, data.type, incomingCol);
+    });
   
-  socket = io.connect(window.location.origin);
-
-  socket.on('drawing', (data) => {
-    drawWeave(data.x, data.y, data.color);
-    hasInteracted = true;
-  });
-
-  colorMode(HSB, 360, 100, 100, 1);
-  background(40, 5, 95);
+textAlign(CENTER);
+textSize(16);
+fill(150);
+noStroke();
+text("Click or drag to weave together", width / 2, height / 2);
 }
 
-function draw() {
-  if (!hasInteracted) {
-    displayGuide();
-  }
-}
+function draw() {}
 
-function displayGuide() {
-  push();
-  textAlign(CENTER, CENTER);
-  textSize(20);
-  textFont('Helvetica');
-  fill(0, 0, 50, 0.5);
-  noStroke();
-  text("Digital Loom: Click or Drag to Weave Together", width / 2, height / 2);
-  pop();
-}
+function drawPattern(x, y, type, col) {
+    let gx = floor(x / step) * step;
+    let gy = floor(y / step) * step;
 
-function mouseDragged() {
-  handleInteraction();
-  return false;
+    push();
+    translate(gx + step/2, gy + step/2);
+    stroke(col);
+    strokeWeight(3); 
+    noFill();
+
+    if (type === 0) {
+        line(-step/2, 0, step/2, 0);
+        line(0, -step/2, 0, step/2);
+    } else if (type === 1) {
+        line(-step/2, -step/2, step/2, step/2);
+    } else if (type === 2) {
+        line(step/2, -step/2, -step/2, step/2);
+    } else if (type === 3) {
+        noStroke();
+        fill(col);
+        rect(-step/2 + 4, -step/2 + 4, step - 8, step - 8);
+    } else if (type === 4) {
+        ellipse(0, 0, step * 0.7);
+    }
+    pop();
 }
 
 function mousePressed() {
-  handleInteraction();
+    myColor = color(random(360), 80, 90);
+    handleInput();
 }
 
-function handleInteraction() {
-  if (!hasInteracted) {
-    background(40, 5, 95); 
-    hasInteracted = true;
-  }
-
-  let x = Math.floor(mouseX / gridSize) * gridSize;
-  let y = Math.floor(mouseY / gridSize) * gridSize;
-
-  let h = random(0, 360);
-  let s = 70;
-  let b = 90;
-  let col = `hsla(${Math.floor(h)}, ${s}%, ${b}%, 0.8)`;
-
-  drawWeave(x, y, col);
-
-  let data = {
-    x: x,
-    y: y,
-    color: col
-  };
-  socket.emit('drawing', data);
+function mouseDragged() {
+    if (frameCount % 3 === 0) {
+        handleInput();
+    }
 }
 
-function drawWeave(x, y, col) {
-  push();
-  translate(x + gridSize / 2, y + gridSize / 2);
-  stroke(col);
-  strokeWeight(3);
-  noFill();
+function handleInput() {
+    let patternType = floor(random(5));
+    drawPattern(mouseX, mouseY, patternType, myColor);
 
-  let r = random([0, HALF_PI]);
-  rotate(r);
-
-  arc(-gridSize / 2, -gridSize / 2, gridSize, gridSize, 0, HALF_PI);
-  arc(gridSize / 2, gridSize / 2, gridSize, gridSize, PI, PI + HALF_PI);
-  pop();
+    socket.emit('drawing', {
+        x: mouseX,
+        y: mouseY,
+        type: patternType,
+        col: {
+            h: hue(myColor),
+            s: saturation(myColor),
+            b: brightness(myColor)
+        }
+    });
 }
 
 function windowResized() {
-  resizeCanvas(windowWidth, windowHeight);
-  background(40, 5, 95);
-  hasInteracted = false;
+    resizeCanvas(windowWidth, windowHeight);
+    background(245);
 }
