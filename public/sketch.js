@@ -5,15 +5,11 @@ let hasInteracted = false;
 
 function setup() {
     createCanvas(windowWidth, windowHeight);
-    background(245); 
-    socket = io();
+   
+    socket = io.connect(window.location.origin);
 
     colorMode(HSB, 360, 100, 100, 1);
     myColor = color(random(360), 80, 90); 
-
-    socket.on('assign_id', (num) => {
-        console.log("Assigned ID: " + num);
-    });
 
     socket.on('drawing', (data) => {
         let incomingCol = color(data.col.h, data.col.s, data.col.b);
@@ -24,6 +20,7 @@ function setup() {
 
 function draw() {
     if (!hasInteracted) {
+        background(245); 
         displayGuide();
     }
 }
@@ -31,9 +28,9 @@ function draw() {
 function displayGuide() {
     push();
     textAlign(CENTER, CENTER);
-    textSize(18);
-    fill(0, 0, 50, 0.4);
+    textSize(24);
     noStroke();
+    fill(0, 0, 0, 0.5); 
     text("Click or drag to weave patterns together", width / 2, height / 2);
     pop();
 }
@@ -78,8 +75,8 @@ function mouseDragged() {
 
 function handleInput() {
     if (!hasInteracted) {
-        background(245); 
         hasInteracted = true;
+        background(245); 
     }
 
     let patternType = floor(random(5));
