@@ -1,9 +1,9 @@
-# Digital Loom: Collaborative Generative Weaving
+# Digital Loom Weaving
 
 ### Live Demo: (https://digital-loom-weaving.onrender.com)
 
 ## Project Concept
-"Digital Loom" is a networked generative art piece that explores collective aesthetics. By translating individual touch/mouse interactions into a synchronized grid-based tapestry, the work investigates how algorithmic structures can organize random human inputs into a unified visual order.
+"Digital Loom Weaving" is a networked generative art piece that explores collective aesthetics. By translating individual touch/mouse interactions into a synchronized grid-based tapestry, the work investigates how algorithmic structures can organize random human inputs into a unified visual order.
 
 ## Technical Features
 * **Real-time Sync**: Built with **Socket.io** for low-latency multi-user interaction.
